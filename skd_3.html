@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CAT Premium Assessment - SKD Paket 2 - Persona Research & Consulting</title>
+    <style>
+        :root {
+            --midnight: #001f3f;
+            --gold: #d4af37;
+            --white: #ffffff;
+            --bg: #0f172a;
+            --success: #10b981;
+            --danger: #ef4444;
+            --slate-100: #f1f5f9;
+            --slate-200: #e2e8f0;
+            --slate-700: #334155;
+            --slate-800: #1e293b;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: var(--slate-700);
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+        }
+
+        .quiz-container {
+            background: var(--white);
+            width: 95%;
+            max-width: 900px;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4);
+            position: relative;
+            margin: 20px 0;
+        }
+
+        .progress-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 6px;
+            background: #e2e8f0;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gold);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        #login-screen { text-align: center; padding: 20px 0; }
+        .login-card {
+            max-width: 400px;
+            margin: 0 auto;
+            background: #f8fafc;
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid var(--slate-200);
+        }
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0;
+            box-sizing: border-box;
+            border: 2px solid var(--slate-200);
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+        }
+        .input-field:focus { border-color: var(--gold); }
+
+        #quiz-ui { display: none; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .badge {
+            background: var(--midnight);
+            color: var(--gold);
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+        .q-count { color: #64748b; font-weight: 600; }
+
+        .question-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--slate-800);
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .options-grid { display: grid; gap: 10px; }
+        .opt-item {
+            padding: 12px 16px;
+            border: 2px solid var(--slate-100);
+            border-radius: 8px;
+            background: #f8fafc;
+            cursor: pointer;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+        .opt-item:hover { border-color: var(--gold); background: #fffcf0; }
+
+        .opt-label {
+            width: 24px;
+            height: 24px;
+            background: var(--midnight);
+            color: var(--gold);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            margin-right: 12px;
+            font-weight: 800;
+            font-size: 12px;
+            flex-shrink: 0;
+        }
+
+        .opt-item.selected-active { border-color: var(--gold); background: #fffcf0; }
+        .opt-item.selected-tiu-twk-correct { background: #ecfdf5; border-color: var(--success); color: #065f46; }
+        .opt-item.selected-tiu-twk-wrong { background: #fef2f2; border-color: var(--danger); color: #991b1b; }
+        .opt-item.selected-tkP { background: #eff6ff; border-color: #3b82f6; color: #1e3a8a; }
+
+        .action-container { display: flex; justify-content: space-between; margin-top: 20px; gap: 10px; }
+        .btn { padding: 12px 24px; font-size: 14px; font-weight: 700; border: none; border-radius: 8px; cursor: pointer; }
+        .btn-prev { background: var(--slate-200); color: var(--slate-700); }
+        .btn-next { background: var(--midnight); color: var(--gold); }
+        .btn-submit { background: var(--success); color: white; }
+        .btn-pdf { background: #ea580c; color: white; margin-right: 10px; }
+
+        .navigation-panel { border-top: 2px dashed var(--slate-100); padding-top: 15px; margin-top: 20px; }
+        .nav-title { font-size: 13px; font-weight: 700; color: #64748b; margin-bottom: 10px; text-transform: uppercase; }
+        .nav-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); gap: 6px; max-height: 110px; overflow-y: auto; }
+        .nav-btn { height: 35px; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; border-radius: 6px; font-size: 12px; font-weight: 700; display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        .nav-btn.active { background: var(--gold); color: var(--midnight); border-color: var(--gold); }
+        .nav-btn.answered { background: var(--midnight); color: var(--gold); border-color: var(--midnight); }
+
+        /* --- UI HALAMAN HASIL & MATRIKS SKOR --- */
+        #result-screen { display: none; }
+        .score-matrix-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        .score-matrix-table th, .score-matrix-table td {
+            border: 1px solid var(--slate-200);
+            padding: 10px;
+            text-align: center;
+        }
+        .score-matrix-table th { background: var(--midnight); color: var(--gold); }
+        .total-row { background: #f8fafc; font-weight: bold; font-size: 15px; }
+
+        /* --- GRID PEMBAHASAN PRO-KOMPAK (TIDAK BOROS) --- */
+        .review-section { margin-top: 25px; border-top: 2px solid var(--midnight); padding-top: 15px; }
+        .review-item {
+            border-bottom: 1px solid var(--slate-200);
+            padding: 10px 0;
+            font-size: 13.5px;
+        }
+        .review-header { display: flex; justify-content: space-between; font-weight: 700; margin-bottom: 4px; color: #475569; }
+        .review-status { font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .explanation-box {
+            margin-top: 4px;
+            background: #fffcf0;
+            border-left: 3px solid var(--gold);
+            padding: 6px 10px;
+            font-size: 12.5px;
+            color: #334155;
+        }
+
+        .footer { text-align: center; font-size: 11px; color: #94a3b8; border-top: 1px solid var(--slate-100); padding-top: 15px; margin-top: 25px; }
+
+        /* --- ATURAN CETAK PDF KOMPATIBEL HP/BROWSER --- */
+        @media print {
+            body { background: white; color: black; }
+            .quiz-container { box-shadow: none; width: 100%; max-width: 100%; padding: 0; margin: 0; }
+            .btn, .navigation-panel, .progress-container, .footer { display: none !important; }
+            #result-screen { display: block !important; }
+            .review-item { page-break-inside: avoid; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="quiz-container" id="main-frame">
+    <div class="progress-container"><div class="progress-fill" id="progress"></div></div>
+    
+    <!-- HALAMAN LOGIN AWAL -->
+    <div id="login-screen">
+        <h2 style="color: var(--midnight); margin-bottom: 5px;">PRC ASSESSMENT PORTAL</h2>
+        <p style="color: #64748b; margin-top: 0; font-size: 14px;">Silakan masukkan identitas untuk memulai simulasi resmi - Paket 2</p>
+        <div class="login-card">
+            <label style="text-align: left; display: block; font-weight: 700; color: var(--slate-800);">Nama Lengkap Peserta:</label>
+            <input type="text" id="username" class="input-field" placeholder="Ketik nama Anda di sini..." autocomplete="off">
+            <button onclick="startAssessment()" class="btn btn-next" style="width: 100%; margin-top: 10px; padding: 14px;">MULAI SIMULASI CAT</button>
+        </div>
+    </div>
+
+    <!-- ANTARMUKA SOAL -->
+    <div id="quiz-ui">
+        <div class="header">
+            <span class="badge" id="category">MATERI</span>
+            <span class="q-count" id="counter">Memuat Angka...</span>
+        </div>
+        <div class="question-text" id="question">Menyiapkan butir soal baru...</div>
+        <div class="options-grid" id="options"></div>
+        
+        <div class="action-container">
+            <button class="btn btn-prev" id="btn-prev" onclick="goToPrev()">← SEBELUMNYA</button>
+            <button class="btn btn-submit" id="btn-submit" onclick="confirmSubmit()" style="display:none;">SELESAI UJIAN ✓</button>
+            <button class="btn btn-next" id="btn-next" onclick="goToNext()">BERIKUTNYA →</button>
+        </div>
+
+        <div class="navigation-panel">
+            <div class="nav-title">Peta Navigasi Evaluasi</div>
+            <div class="nav-grid" id="nav-grid"></div>
+        </div>
+    </div>
+
+    <!-- HALAMAN EVALUASI, SKOR AKUMULASI & REKAP PEMBAHASAN KOMPAK -->
+    <div id="result-screen">
+        <h2 style="text-align: center; margin-bottom: 5px; color: var(--midnight);">LAPORAN HASIL EVALUASI</h2>
+        <p style="text-align: center; color: #64748b; margin-top:0;" id="user-manifest"></p>
+        
+        <!-- Tabel Akumulasi Skor Detail -->
+        <table class="score-matrix-table">
+            <thead>
+                <tr>
+                    <th>Kategori Materi</th>
+                    <th>Skor Asli</th>
+                    <th>Skor Maksimal</th>
+                    <th>Skala 100</th>
+                </tr>
+            </thead>
+            <tbody id="matrix-body">
+                <!-- Data diinjeksi via JavaScript -->
+            </tbody>
+        </table>
+
+        <div style="text-align: center; margin: 20px 0;">
+            <button onclick="window.print()" class="btn btn-pdf">DOWNLOAD / PRINT PDF</button>
+            <button onclick="window.location.reload()" class="btn btn-prev">UJIAN ULANG</button>
+        </div>
+        
+        <!-- Konten Penjabaran Review Kompak -->
+        <div class="review-section">
+            <h3 style="color: var(--midnight); border-bottom: 2px solid var(--slate-200); padding-bottom: 5px; margin-bottom: 10px;">REKAP JAWABAN & PEMBAHASAN KILAT</h3>
+            <div id="review-list"></div>
+        </div>
+    </div>
+
+    <div class="footer">
+        © 2026 Persona Research & Consulting | WA: 0877 4251 5786
+    </div>
+</div>
+
+<script>
+// --- PROTOKOL KEAMANAN ---
+document.addEventListener('contextmenu', function(e) { e.preventDefault(); });
+document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && (e.key === 'c' || e.key === 'u' || e.key === 'i' || e.key === 's')) e.preventDefault();
+});
+
+const rawBank = [
+    // --- TIU (1 - 20) ---
+    { c: "TIU", q: "KONTRADIKSI : PERNYATAAN = ... : ...", a: ["Konvergensi : Sudut", "Ambiguitas : Makna", "Simbiosis : Organisme", "Ekuivalen : Nilai", "Epilog : Cerita"], k: "Ambiguitas : Makna", p: "Kontradiksi adalah sifat pernyataan yang memiliki pertentangan logis, sedangkan Ambiguitas adalah sifat makna yang mendua atau tidak jelas." },
+    { c: "TIU", q: "Semua komputer di lab A memiliki spesifikasi tinggi. Sebagian komputer yang memiliki spesifikasi tinggi harganya mahal.", a: ["Semua komputer di lab A harganya mahal", "Sebagian komputer di lab A harganya mahal", "Semua komputer yang mahal ada di lab A", "Komputer yang tidak mahal tidak ada di lab A", "Tidak dapat ditarik kesimpulan"], k: "Tidak dapat ditarik kesimpulan", p: "Term tengah 'spesifikasi tinggi' berkedudukan sebagai predikat di premis 1 dan subjek partikular di premis 2. Irisan komputer lab A dan harga mahal tidak mutlak/tidak dapat disimpulkan." },
+    { c: "TIU", q: "Jika p * q = p^2 - 2q, maka nilai dari 5 * (4 * 6) adalah...", a: ["13", "17", "21", "25", "29"], k: "17", p: "Hitung dalam kurung dulu: 4 * 6 = 4^2 - 2(6) = 16 - 12 = 4. Kemudian hitung 5 * 4 = 5^2 - 2(4) = 25 - 8 = 17." },
+    { c: "TIU", q: "Jika x adalah 16,67% dari 240 dan y adalah akar kubik dari 216, maka...", a: ["x > y", "x < y", "x = y", "x + y = 50", "Hubungan tidak dapat ditentukan"], k: "x > y", p: "x = 1/6 * 240 = 40. y = akar pangkat 3 dari 216 = 6. Jadi 40 > 6, sehingga x > y." },
+    { c: "TIU", q: "Deret angka: 2, 3, 6, 7, 14, 15, ...", a: ["22", "30", "31", "32", "45"], k: "30", p: "Polanya berselang-seling: pola operasi aritmatikanya adalah +1, *2, +1, *2, +1, dan seterusnya. Setelah 15, operasinya adalah *2 menjadi 30." },
+    { c: "TIU", q: "Sinonim dari kata 'INSINUASI' adalah...", a: ["Terang-terangan", "Saran baku", "Sindiran", "Pernyataan", "Kebenaran"], k: "Sindiran", p: "Insinuasi dalam KBBI bermakna tuduhan tidak terang-terangan, rahasia, atau sindiran secara tidak langsung." },
+    { c: "TIU", q: "MATA : KACAMATA = ... : ...", a: ["Kaki : Sepatu", "Kepala : Helm", "Tangan : Sarung tangan", "Patah tulang : Gips", "Gigi : Behel"], k: "Gigi : Behel", p: "Kacamata berfungsi untuk mengoreksi/membantu fungsi Mata yang kurang baik, sebagaimana Behel dipasang untuk merapikan/mengoreksi posisi Gigi." },
+    { c: "TIU", q: "Sebuah bak mandi jika diisi keran A penuh dalam 4 jam, sedangkan keran B penuh dalam 6 jam. Jika kedua keran dibuka bersamaan, berapa jam bak penuh?", a: ["2,0 jam", "2,4 jam", "2,8 jam", "3,0 jam", "3,2 jam"], k: "2,4 jam", p: "1/Total = 1/4 + 1/6 = (3+2)/12 = 5/12. Total waktu = 12/5 = 2,4 jam." },
+    { c: "TIU", q: "Antonim dari kata 'PROMINEN' adalah...", a: ["Terkemuka", "Biasa/Amatir", "Utama", "Tergantung", "Penting"], k: "Biasa/Amatir", p: "Prominen bermakna terkemuka, menonjol, atau kondang. Lawan kata yang paling pas adalah biasa, awam, atau amatir." },
+    { c: "TIU", q: "Deret angka: 1, 4, 10, 22, 46, ...", a: ["82", "90", "94", "96", "102"], k: "94", p: "Pola deret didapat dari (Angka Sebelumnya * 2) + 2. Maka angka berikutnya adalah (46 * 2) + 2 = 92 + 2 = 94." },
+    { c: "TIU", q: "MOBIL : BENSIN = ... : ...", a: ["Sapi : Rumput", "Lampu : Saklar", "Manusia : Makanan", "Pesawat : Pilot", "Perahu : Dayung"], k: "Manusia : Makanan", p: "Mobil memerlukan bensin sebagai sumber energi utama untuk bergerak, setara dengan Manusia yang mutlak membutuhkan Makanan sebagai energi utama hidup." },
+    { c: "TIU", q: "Jika harga 3 lusin baju adalah Rp1.800.000, berapakah harga 15 belas baju?", a: ["Rp650.000", "Rp750.000", "Rp800.000", "Rp850.000", "Rp900.000"], k: "Rp750.000", p: "3 lusin = 36 baju. Harga per baju = 1.800.000 / 36 = Rp50.000. Maka harga 15 baju = 15 * 50.000 = Rp750.000." },
+    { c: "TIU", q: "Deret angka: 100, 95, 85, 70, 50, ...", a: ["40", "35", "30", "25", "20"], k: "25", p: "Pola pengurangan bertingkat: -5, -10, -15, -20. Pengurangan berikutnya adalah -25, maka 50 - 25 = 25." },
+    { c: "TIU", q: "KAYU : PASAK = ... : ...", a: ["Dinding : Paku", "Besi : Las", "Kertas : Lem", "Roda : Ban", "Buku : Benang"], k: "Dinding : Paku", p: "Pasak digunakan untuk mengencangkan/menyambung konstruksi Kayu, setara dengan Paku yang digunakan pada konstruksi Dinding." },
+    { c: "TIU", q: "Jika 3x + y = 17 dan x - y = 3, maka nilai dari 2x + 3y adalah...", a: ["13", "14", "15", "16", "17"], k: "16", p: "Eliminasi penjumlahan: 4x = 20 -> x = 5. Substitusi x=5 ke persamaan kedua: 5 - y = 3 -> y = 2. Nilai 2(5) + 3(2) = 10 + 6 = 16." },
+    { c: "TIU", q: "Sinonim dari kata 'EKSENTRIK' adalah...", a: ["Aneh/Ganjil", "Sejajar", "Pusat lingkaran", "Kuno", "Modern"], k: "Aneh/Ganjil", p: "Eksentrik bermakna aneh, ganjil, atau memiliki gaya/perilaku yang tidak wajar atau tidak sesuai dengan norma umum." },
+    { c: "TIU", q: "Antonim dari kata 'PERMANEN' adalah...", a: ["Kekal", "Fana/Sementara", "Kuat", "Baku", "Tegar"], k: "Fana/Sementara", p: "Permanen artinya tetap atau berlangsung lama tanpa batas. Lawan katanya adalah fana, fasa, atau sementara." },
+    { c: "TIU", q: "Sebuah toko memberikan diskon ganda 20% + 10%. Jika harga barang Rp100.000, berapa harga akhir setelah diskon?", a: ["Rp70.000", "Rp72.000", "Rp75.000", "Rp78.000", "Rp80.000"], k: "Rp72.000", "p": "Diskon pertama: 20% dari 100.000 = Rp20.000 (Sisa Rp80.000). Diskon kedua: 10% dari 80.000 = Rp8.000. Harga akhir = 80.000 - 8.000 = Rp72.000." },
+    { c: "TIU", q: "Deret huruf: A, C, F, J, O, ...", a: ["T", "U", "V", "W", "X"], k: "U", p: "Pola lompatan huruf abjad bertambah secara progresif: +1 huruf (B), +2 huruf (D, E), +3 huruf (G, H, I), +4 huruf (K, L, M, N). Selanjutnya +5 huruf setelah O (P, Q, R, S, T) yaitu U." },
+    { c: "TIU", q: "Semua unggas bertelur. Buaya bertelur tetapi bukan termasuk jenis unggas.", a: ["Buaya adalah unggas yang hidup di air", "Ada unggas yang tidak bertelur", "Buaya dan unggas memiliki kekerabatan dekat", "Bertelur bukan karakteristik mutlak unggas saja", "Buaya tidak bertelur jika di darat"], k: "Bertelur bukan karakteristik mutlak unggas saja", p: "Karena buaya bertelur dan dia bukan unggas, ini membuktikan bahwa ciri/karakteristik reproduksi bertelur juga dimiliki oleh kelas hewan lain (reptil)." },
+
+    // --- TWK (21 - 40) ---
+    { c: "TWK", q: "Sidang pertama BPUPKI pada tanggal 29 Mei - 1 Juni 1945 secara khusus fokus membahas tentang...", a: ["Rancangan Batang Tubuh UUD", "Teks Proklamasi Kemerdekaan", "Dasar Negara Indonesia", "Sistem Pemerintahan Negara", "Wilayah Kedaulatan RI"], k: "Dasar Negara Indonesia", p: "Sidang pertama BPUPKI dipimpin oleh Dr. Radjiman khusus mendengarkan gagasan dasar negara dari Moh. Yamin, Soepomo, dan Ir. Soekarno." },
+    { c: "TWK", q: "Hak DPR untuk meminta keterangan kepada pemerintah mengenai kebijakan yang penting, strategis, serta berdampak luas disebut...", a: ["Hak Interpelasi", "Hak Angket", "Hak Menyatakan Pendapat", "Hak Imunitas", "Hak Budget"], k: "Hak Interpelasi", p: "Hak Interpelasi adalah hak dasar DPR untuk meminta keterangan resmi dari pihak pemerintah (eksekutif) terkait jalannya roda tata negara." },
+    { c: "TWK", q: "Siapakah tokoh nasional yang mengusulkan nama 'Pancasila' untuk dasar negara pada sidang BPUPKI tanggal 1 Juni 1945?", a: ["Drs. Moh. Hatta", "Mr. Muhammad Yamin", "Prof. Dr. Soepomo", "Ir. Soekarno", "Mr. Achmad Soebardjo"], k: "Ir. Soekarno", p: "Nama Pancasila diusulkan oleh Ir. Soekarno atas petunjuk dan saran dari seorang teman ahli bahasa pada pidatonya tanggal 1 Juni 1945." },
+    { c: "TWK", q: "Bentuk negara Indonesia didasarkan pada Undang-Undang Dasar 1945 Pasal 1 Ayat (1) adalah negara...", a: ["Republik", "Kesatuan", "Federasi", "Monarki", "Parlementer"], k: "Kesatuan", p: "Pasal 1 ayat (1) UUD 1945 menyatakan secara absolut: 'Negara Indonesia ialah Negara Kesatuan, yang berbentuk Republik'." },
+    { c: "TWK", q: "Tata urutan peraturan perundang-undangan RI yang menempatkan Perpres (Peraturan Presiden) berada langsung di atas...", a: ["Peraturan Pemerintah (PP)", "Undang-Undang (UU)", "Peraturan Daerah Provinsi", "TAP MPR", "Perda Kabupaten/Kota"], k: "Peraturan Daerah Provinsi", p: "Menurut UU No. 12 Tahun 2011, tata urutan dari atas: UUD 1945, TAP MPR, UU/Perpu, PP, Perpres, Perda Provinsi, Perda Kabupaten/Kota." },
+    { c: "TWK", q: "Semboyan Bhinneka Tunggal Ika diambil dari Kitab Sutasoma karangan Mpu Tantular yang ditulis pada masa kerajaan...", a: ["Sriwijaya", "Majapahit", "Singasari", "Tarumanegara", "Kutai"], k: "Majapahit", p: "Kitab Sutasoma ditulis pada masa keemasan Kerajaan Majapahit di bawah pemerintahan Raja Hayam Wuruk." },
+    { c: "TWK", q: "Lembaga negara baru yang dibentuk pasca amandemen UUD 1945 yang bertugas mengusulkan pengangkatan hakim agung adalah...", a: ["Mahkamah Konstitusi", "Komisi Yudisial", "Dewan Perwakilan Daerah", "Badan Pemeriksa Keuangan", "Komisi Pemberantasan Korupsi"], k: "Komisi Yudisial", p: "Komisi Yudisial (KY) bersifat mandiri yang berwenang mengusulkan pengangkatan hakim agung dan menjaga kehormatan perilaku hakim." },
+    { c: "TWK", q: "Sila keempat Pancasila dipimpin oleh hikmat kebijaksanaan dalam permusyawaratan/perwakilan memberikan penekanan utama pada...", a: ["Keadilan hukum bagi perorangan", "Kerukunan antar umat beragama", "Pengutamaan musyawarah mufakat", "Persatuan wilayah nusantara", "Hak asasi kebebasan berpendapat"], k: "Pengutamaan musyawarah mufakat", p: "Sila ke-4 menekankan asas kerakyatan dan tata cara pengambilan keputusan kolektif kenegaraan melalui musyawarah mufakat." },
+    { c: "TWK", q: "Secara geografis, batas astronomis wilayah kedaulatan Negara Kesatuan Republik Indonesia berada pada...", a: ["6 LU - 11 LS dan 95 BT - 141 BT", "11 LU - 6 LS dan 95 BT - 141 BT", "6 LU - 11 LS dan 141 BT - 95 BB", "95 LU - 141 LS dan 6 BT - 11 BT", "0 LU - 10 LS dan 90 BT - 140 BT"], k: "6 LU - 11 LS dan 95 BT - 141 BT", p: "Letak astronomis resmi Indonesia berada di antara lintang 6 derajat Lintang Utara sampai 11 derajat Lintang Selatan, dan 95 derajat Bujur Timur sampai 141 derajat Bujur Timur." },
+    { c: "TWK", q: "Salah satu contoh implementasi dari wujud bela negara secara objektif dan dinamis bagi seorang aparatur negara (ASN) adalah...", a: ["Mengikuti latihan militer tempur di perbatasan", "Bekerja dengan integritas, profesional, dan bebas KKN", "Membuat status nasionalisme di media sosial setiap hari", "Menggunakan seragam batik setiap hari tanpa kecuali", "Menolak kerja sama dengan lembaga internasional"], k: "Bekerja dengan integritas, profesional, dan bebas KKN", p: "Bela negara bagi sipil/ASN diimplementasikan melalui pengabdian profesi secara jujur, optimal, jujur, serta berintegritas tinggi." },
+    { c: "TWK", q: "Sistem pemerintahan kabinet di mana menteri-menteri bertanggung jawab penuh kepada parlemen (DPR) dinamakan...", a: ["Sistem Presidensiil", "Sistem Parlementer", "Sistem Semiperiode", "Sistem Absolut", "Sistem Monarki"], k: "Sistem Parlementer", p: "Dalam sistem parlementer, eksekutif (kabinet) dipimpin perdana menteri dan akuntabilitas politiknya berada di bawah parlemen." },
+    { c: "TWK", q: "Pengakuan kemerdekaan Indonesia oleh negara lain merupakan salah satu unsur terbentuknya negara yang bersifat...", a: ["Konstitutif", "Deklaratif", "Mutlak", "Primer", "Internal"], k: "Deklaratif", p: "Unsur terbentuknya negara ada dua: unsur Konstitutif (rakyat, wilayah, pemerintah berdaulat) dan unsur Deklaratif (pengakuan negara lain)." },
+    { c: "TWK", q: "Peristiwa Rengasdengklok yang terjadi pada tanggal 16 Agustus 1945 dilatarbelakangi oleh...", a: ["Perebutan senjata dari tangan tentara sekutu", "Perbedaan pendapat golongan muda dan tua mengenai waktu proklamasi", "Pembubaran organisasi BPUPKI oleh Jepang", "Serangan mendadak tentara Sekutu di Jakarta", "Penyusunan teks naskah proklamasi oleh Ahmad Soebardjo"], k: "Perbedaan pendapat golongan muda dan tua mengenai waktu proklamasi", p: "Golongan muda menghendaki proklamasi secepatnya pasca kekalahan Jepang, sedangkan golongan tua ingin berkoordinasi melalui PPKI." },
+    { c: "TWK", q: "Menurut UUD 1945, kekuasaan tertinggi atas seluruh jajaran Angkatan Darat, Angkatan Laut, dan Angkatan Udara dipegang oleh...", a: ["Panglima TNI", "Menteri Pertahanan", "Presiden", "Ketua MPR", "Kepala Staf Angkatan"], k: "Presiden", p: "Sesuai Pasal 10 UUD 1945, Presiden memegang kekuasaan tertinggi atas Angkatan Darat, Angkatan Laut, dan Angkatan Udara." },
+    { c: "TWK", q: "Ciri khas utama dari ideologi terbuka yang membedakannya dari ideologi tertutup adalah...", a: ["Nilai-nilainya dipaksakan dari luar oleh kelompok penguasa", "Bersifat dogmatis, kaku, dan tidak boleh dipertanyakan", "Nilai dan cita-citanya digali dari kekayaan rohani dan budaya masyarakat sendiri", "Menolak total modernisasi dan perkembangan teknologi", "Mutlak didasarkan pada satu doktrin kepemimpinan tunggal"], k: "Nilai dan cita-citanya digali dari kekayaan rohani dan budaya masyarakat sendiri", p: "Ideologi terbuka (seperti Pancasila) lahir dari konsensus moral-budaya masyarakat asli, menjadikannya fleksibel mengikuti perkembangan zaman." },
+    { c: "TWK", q: "Pajak, pungutan resmi, dan bea cukai yang bersifat memaksa untuk keperluan negara diatur sepenuhnya dengan menggunakan...", a: ["Peraturan Presiden", "Keputusan Menteri", "Undang-Undang", "Peraturan Pemerintah", "Instruksi Gubernur"], k: "Undang-Undang", p: "Pasal 23A UUD 1945 berbunyi: 'Pajak dan pungutan lain yang bersifat memaksa untuk keperluan negara diatur dengan undang-undang'." },
+    { c: "TWK", q: "Perjanjian internasional pertama antara Indonesia dan Belanda pasca proklamasi yang memicu pengakuan de facto wilayah Jawa, Madura, dan Sumatera adalah...", a: ["Perjanjian Renville", "Perjanjian Linggajati", "Perjanjian Roem-Royen", "Konferensi Meja Bundar", "Perjanjian Bongaya"], k: "Perjanjian Linggajati", p: "Perjanjian Linggajati (1947) menghasilkan pengakuan de facto Belanda atas wilayah Sumatera, Jawa, dan Madura." },
+    { c: "TWK", q: "Kekuasaan legislatif untuk membentuk undang-undang di Indonesia secara konstitusional dipegang oleh lembaga...", a: ["Presiden", "DPR", "MA", "MK", "DPD"], k: "DPR", p: "Pasal 20 Ayat (1) UUD 1945 menegaskan Dewan Perwakilan Rakyat (DPR) memegang kekuasaan membentuk undang-undang." },
+    { c: "TWK", q: "Keragaman suku dan budaya di Indonesia dipandang sebagai modal pembangunan nasional yang dikristalkan dalam Pancasila Sila ke...", a: ["1", "2", "3", "4", "5"], k: "3", p: "Persatuan Indonesia (Sila ke-3) menjadi payung hukum sosial yang menyatukan keragaman horizontal masyarakat nusantara." },
+    { c: "TWK", q: "Asas kewarganegaraan yang menentukan status kewarganegaraan seseorang berdasarkan tempat di mana ia dilahirkan disebut...", a: ["Ius Sanguinis", "Ius Soli", "Stelsel Aktif", "Stelsel Pasif", "Apatride"], k: "Ius Soli", p: "Ius Soli adalah asas daerah kelahiran, sedangkan Ius Sanguinis adalah asas penentuan kewarganegaraan berdasarkan ikatan darah/keturunan." },
+
+    // --- TKP (41 - 60) ---
+    {
+        c: "TKP", q: "Ketika Anda sedang dikejar tenggat waktu laporan yang rumit, sistem komputer kantor mendadak lambat karena ada pembaruan otomatis (update) dari pusat. Tindakan Anda...",
+        a: [
+            ["Tetap tenang, memanfaatkan waktu tunggu dengan merapikan berkas fisik penyusun laporan, lalu melanjutkan pengetikan dengan cepat", 5],
+            ["Segera menghubungi bagian teknisi IT untuk meminta solusi mempercepat atau menunda proses pembaruan otomatis tersebut", 4],
+            ["Berusaha memindahkan pekerjaan pengetikan sementara ke laptop pribadi atau komputer rekan lain yang tidak sedang update", 3],
+            ["Mengeluh kesal dan menunggu dengan pasif di depan monitor komputer sampai sistem kembali berjalan normal", 2],
+            ["Memutuskan berhenti bekerja dan meminta kelonggaran tenggat waktu kepada atasan karena alasan kendala teknis", 1]
+        ], p: "Ketenangan dan optimalisasi waktu tunggu dengan pekerjaan administratif lain menunjukkan manajemen stres kerja yang produktif."
+    },
+    {
+        c: "TKP", q: "Instansi tempat Anda bekerja merilis aplikasi layanan baru untuk masyarakat, namun banyak warga senior mengeluhkan sistemnya membingungkan. Sikap Anda...",
+        a: [
+            ["Membuat infografis panduan singkat dan video tutorial sederhana yang mudah dipahami, lalu membagikannya ke ruang tunggu", 5],
+            ["Membantu mengasistensi dan memandu secara langsung warga senior tersebut di loket dengan ramah dan sabar", 4],
+            ["Menyarankan warga senior tersebut meminta bantuan anak atau kerabat mudanya untuk mengoperasikan aplikasi", 3],
+            ["Melaporkan keluhan tersebut ke tim developer aplikasi agar tampilan antarmukanya diubah menjadi lebih sederhana", 2],
+            ["Mengatakan secara baku bahwa perubahan digital adalah kewajiban yang harus dipelajari mandiri oleh semua lapisan warga", 1]
+        ], p: "Inisiatif membuat media panduan edukatif berkelanjutan mencerminkan kompetensi pelayanan publik (hospitality) yang visioner."
+    },
+    {
+        c: "TKP", q: "Anda ditugaskan memimpin sebuah proyek divisi, namun anggaran yang diturunkan oleh tim keuangan dipotong sebesar 20% dari draf awal. Langkah Anda...",
+        a: [
+            ["Menyusun ulang skala prioritas program, memotong biaya sekunder tanpa mengurangi kualitas output utama proyek", 5],
+            ["Mendiskusikan kondisi pemotongan anggaran tersebut bersama anggota tim untuk mencari solusi efisiensi bersama", 4],
+            ["Menghadap ke bagian keuangan untuk meminta rincian alasan pemotongan anggaran dan menegosiasikan pengembalian dana", 3],
+            ["Tetap menjalankan proyek sesuai rencana awal hingga anggaran habis, lalu memikirkan solusinya belakangan", 2],
+            ["Menyatakan keberatan memimpin proyek karena menganggap pemotongan anggaran akan membuat proyek gagal total", 1]
+        ], p: "Kemampuan melakukan restrukturisasi program berbasis skala prioritas menunjukkan profesionalisme pengelolaan anggaran yang adaptif."
+    },
+    {
+        c: "TKP", q: "Rekan kerja terdekat Anda menceritakan sebuah rahasia pribadi yang ternyata melibatkan pelanggaran prosedur kerja internal divisi. Sikap Anda...",
+        a: [
+            ["Mengingatkan rekan tersebut secara asertif akan risiko pelanggarannya dan memintanya segera memperbaiki kesalahan sesuai SOP", 5],
+            ["Mendengarkan ceritanya dengan netral tanpa ikut campur, namun menolak memberikan saran yang melanggar hukum", 4],
+            ["Melaporkan temuan pelanggaran prosedur tersebut secara anonim ke bagian kepatuhan internal instansi", 3],
+            ["Menjaga rahasia tersebut dengan rapat demi menjaga loyalitas pertemanan, meskipun tahu tindakan itu salah", 2],
+            ["Menyebarkan informasi tersebut kepada rekan kerja lain di ruangan sebagai bahan obrolan dan peringatan", 1]
+        ], p: "Mengingatkan rekan secara langsung untuk kembali ke koridor SOP menggabungkan integritas organisasi dan komunikasi interpersonal yang baik."
+    },
+    {
+        c: "TKP", q: "Atasan menolak usulan draf inovasi pelayanan yang telah Anda susun selama dua minggu karena dinilai terlalu berisiko secara birokrasi. Sikap Anda...",
+        a: [
+            ["Menerima umpan balik atasan, mempelajari mitigasi risikonya, lalu merevisi draf inovasi agar lebih aman diterapkan", 5],
+            ["Meminta waktu berdiskusi khusus dengan atasan untuk memaparkan argumen pendukung inovasi secara lebih mendalam", 4],
+            ["Menerima keputusan penolakan tersebut dengan lapang dada dan kembali bekerja menggunakan metode konvensional", 3],
+            ["Merasa kecewa dan menganggap atasan terlalu kolot serta antipati terhadap perubahan teknologi baru", 2],
+            ["Mengabaikan penolakan tersebut dan mencoba menerapkan konsep inovasi itu secara diam-diam dalam skala kecil", 1]
+        ], p: "Keterbukaan merevisi instrumen risiko inovasi menandakan resiliensi performa dan loyalitas organisasi yang matang."
+    },
+    {
+        c: "TKP", q: "Seorang pengguna layanan marah-marah di depan loket Anda karena berkasnya tertukar akibat kelalaian petugas administrasi shift sebelumnya. Tindakan Anda...",
+        a: [
+            ["Meminta maaf dengan tulus atas ketidaknyamanan tersebut, mendengarkan keluhannya, lalu segera mencarikan berkasnya yang benar", 5],
+            ["Menjelaskan secara kronologis bahwa kesalahan tersebut murni merupakan kelalaian dari petugas administrasi shift sebelum Anda", 4],
+            ["Meminta warga tersebut untuk tenang dan menunggu di kursi antrean sementara Anda memeriksa masalahnya", 3],
+            ["Memanggil komandan keamanan (satpam) untuk mengamankan warga tersebut agar tidak mengganggu antrean loket lain", 2],
+            ["Membalas dengan nada tegas bahwa marah-marah tidak akan menyelesaikan masalah berkas yang hilang", 1]
+        ], p: "Akuntabilitas pelayanan publik mewajibkan penanganan komplain instan dengan empati tinggi tanpa melempar kesalahan antar-staf."
+    },
+    {
+        c: "TKP", q: "Unit kerja Anda mendapatkan mutasi pimpinan baru yang memiliki gaya kepemimpinan sangat ketat, perfeksionis, dan serba cepat. Sikap Anda...",
+        a: [
+            ["Menyesuaikan ritme kerja pribadi secara instan, meningkatkan ketelitian, dan berupaya memenuhi standar pimpinan baru", 5],
+            ["Mempelajari visi dan pola komunikasi pimpinan baru tersebut agar tugas-tugas divisi berjalan selaras", 4],
+            ["Menjalankan tugas seperti biasa sambil mengamati perkembangan situasi kenyamanan di internal ruangan", 3],
+            ["Berdiskusi dengan rekan kerja lain untuk mengeluhkan tuntutan pimpinan baru yang dinilai terlalu menekan fisik", 2],
+            ["Sengaja bekerja lambat sebagai bentuk protes pasif agar pimpinan baru menurunkan standar ketatnya", 1]
+        ], p: "Kemampuan akselerasi adaptasi terhadap kepemimpinan yang dinamis mencerminkan kompetensi aparatur yang andal."
+    },
+    {
+        c: "TKP", q: "Anda ditunjuk menghadiri diklat pengembangan teknologi informasi luar daerah, namun jadwalnya bentrok dengan acara keluarga inti Anda. Sikap Anda...",
+        a: [
+            ["Tetap mengutamakan penugasan diklat dinas negara dan memberikan pemahaman yang baik secara kekeluargaan", 5],
+            ["Mencoba mencari opsi pergeseran waktu acara keluarga agar Anda tetap bisa berangkat diklat tanpa kendala", 4],
+            ["Mengajukan permohonan delegasi tugas diklat kepada rekan kerja lain yang dirasa berminat dan kompeten", 3],
+            ["Meminta izin ke atasan untuk tidak mengikuti diklat dengan melampirkan alasan kepentingan keluarga", 2],
+            ["Berangkat diklat dengan setengah hati sehingga tidak fokus menyerap materi pengajaran teknologi informasi", 1]
+        ], p: "Mengutamakan kepentingan kedinasan di atas kepentingan privat merupakan salah satu indikator integritas loyalitas ASN."
+    },
+    {
+        c: "TKP", q: "Saat melakukan evaluasi, Anda melihat ada celah kebocoran efisiensi waktu pada alur kerja pelayanan di divisi rekan sebelah. Sikap Anda...",
+        a: [
+            ["Menyusun draf saran perbaikan berbasis data secara tertulis lalu menyampaikannya secara santun saat forum rapat koordinasi internal", 5],
+            ["Menyampaikan masukan tersebut secara personal dan santai kepada ketua divisi terkait saat jam istirahat kantor", 4],
+            ["Memilih diam untuk menghormati privasi batas wilayah kerja masing-masing divisi agar tidak memicu ketersinggungan", 3],
+            ["Langsung melaporkan celah kebocoran tersebut ke pimpinan tertinggi agar divisi tersebut ditegur", 2],
+            ["Membicarakan kelemahan sistem divisi tersebut bersama rekan seruangan Anda sebagai evaluasi perbandingan", 1]
+        ], p: "Pemberian masukan solutif berbasis data dalam forum resmi (rapat koordinasi) menunjukkan profesionalisme kerja jejaring."
+    },
+    {
+        c: "TKP", q: "Anda tidak sengaja menumpahkan kopi pada dokumen laporan keuangan fisik yang asli dan akan diserahkan ke atasan 1 jam lagi. Tindakan Anda...",
+        a: [
+            ["Segera mencetak ulang dokumen dari file komputer, memindahkan tanda tangan (jika diperlukan prosedur resmi), dan menyelesaikannya tepat waktu", 5],
+            ["Melapor jujur kepada atasan mengenai kecerobohan tersebut dan meminta waktu tambahan untuk mencetak ulang laporan", 4],
+            ["Mencoba mengeringkan dokumen tersebut dengan tisu dan tetap menyerahkannya apa adanya dengan alasan kecelakaan kecil", 3],
+            ["Menyalahkan posisi cangkir kopi rekan kerja yang ditaruh terlalu dekat dengan berkas laporan Anda", 2],
+            ["Menunda penyerahan laporan tanpa penjelasan dan membiarkan atasan menunggu dokumen tersebut", 1]
+        ], p: "Penanganan masalah mandiri secara instan dan taktis (problem solving) sebelum melapor adalah tindakan aparatur berkinerja tinggi."
+    },
+    {
+        c: "TKP", q: "Ada tawaran skema kerja sama sponsorship dari perusahaan swasta yang berpotensi memberikan keuntungan personal bagi Anda selaku panitia pengadaan. Sikap Anda...",
+        a: [
+            ["Menolak tegas klausul keuntungan personal, mengalihkan seluruh surplus dana ke kas resmi instansi sesuai aturan", 5],
+            ["Melaporkan penawaran tersebut kepada atasan untuk mendapatkan arahan hukum penolakan gratifikasi", 4],
+            ["Menerima sponsorship tersebut murni untuk kesuksesan instansi tanpa mengambil keuntungan pribadi sedikit pun", 3],
+            ["Menerima keuntungan personal tersebut dengan menganggapnya sebagai bonus prestasi atas kerja keras kepanitiaan", 2],
+            ["Meminta vendor menaikkan nilai dana sponsorship agar jatah keuntungan pribadi Anda semakin besar", 1]
+        ], p: "Komitmen menjaga netralitas finansial dan menolak keuntungan privat (anti-gratifikasi) adalah harga mati integritas ASN."
+    },
+    {
+        c: "TKP", q: "Divisi Anda diminta membuat konten digital kreatif untuk sosialisasi regulasi baru, namun tim Anda belum memiliki kompetensi editing video. Strategi Anda...",
+        a: [
+            ["Mengajak tim mengikuti mini-course online gratis editing video via ponsel, lalu membagi tugas produksi konten", 5],
+            ["Mengusulkan pengadaan vendor eksternal untuk membuat konten video agar hasilnya terlihat mewah dan profesional", 4],
+            ["Membuat format konten sosialisasi dalam bentuk infografis gambar statis yang dikuasai oleh tim saat ini", 3],
+            ["Meminta dispensasi kepada atasan untuk menunda pembuatan konten video sampai ada pelatihan IT resmi", 2],
+            ["Mengerjakan video dengan kualitas seadanya tanpa peduli estetika visual digital yang penting tugas gugur", 1]
+        ], p: "Inisiatif meningkatkan kapasitas sdm tim secara swadaya (learning agility) mencerminkan adaptasi teknologi informasi modern."
+    },
+    {
+        c: "TKP", q: "Seorang staf junior di tim Anda membuat kesalahan fatal dalam penginputan data keuangan yang mengakibatkan tim ditegur oleh pimpinan. Tindakan Anda selaku ketua tim...",
+        a: [
+            ["Mengambil tanggung jawab bersama di depan pimpinan, lalu mengumpulkan tim untuk mengevaluasi sistem dan membimbing staf junior tersebut", 5],
+            ["Meminta staf junior tersebut menghadap pimpinan secara mandiri untuk menjelaskan duduk perkara kesalahannya", 4],
+            ["Menegur staf junior tersebut dengan keras di depan seluruh anggota tim agar memberikan efek jera bagi yang lain", 3],
+            ["Membantu memperbaiki data yang salah secara diam-diam tanpa melakukan evaluasi atau edukasi mendalam", 2],
+            ["Membiarkan masalah tersebut berlarut-larut karena menganggap kesalahan input data adalah tanggung jawab personal", 1]
+        ], p: "Kepemimpinan (leadership) yang matang ditunjukkan dengan keberanian mengambil tanggung jawab kolegial serta melakukan pembinaan staf."
+    },
+    {
+        c: "TKP", q: "Menurut pandangan Anda, profesionalisme dalam menjalankan pelayanan publik harian paling utama diwujudkan dalam hal...",
+        a: [
+            ["Menuntaskan seluruh berkas pekerjaan tepat waktu dengan akurasi tinggi sesuai dengan target SOP", 5],
+            ["Selalu bersikap ramah, senyum, dan menyapa setiap pengguna layanan tanpa membeda-bedakan status", 4],
+            ["Mematuhi seluruh perintah atasan secara mutlak tanpa pernah mempertanyakan dasar kebijakannya", 3],
+            ["Datang dan pulang kantor paling awal dibandingkan rekan kerja lain di dalam satu ruangan", 2],
+            ["Mengikuti jalannya seminar pengembangan diri agar mendapatkan banyak sertifikat kompetensi penunjang", 1]
+        ], p: "Output performa berbasis SOP yang presisi dan tepat waktu adalah esensi operasional utama nilai profesionalisme ASN."
+    },
+    {
+        c: "TKP", q: "Instansi Anda mengadakan forum diskusi tahunan untuk mendengarkan masukan dari berbagai komunitas lintas suku dan agama di daerah. Langkah optimal Anda...",
+        a: [
+            ["Mencatat seluruh aspirasi spesifik secara objektif, menyusunnya dalam matriks kebutuhan pelayanan, dan mengusulkannya ke pimpinan", 5],
+            ["Menjadi pendengar yang baik dan ramah selama acara berlangsung demi menjaga keharmonisan hubungan sosial", 4],
+            ["Membatasi usulan yang dirasa terlalu sensitif agar jalannya forum tidak memicu perdebatan ideologis", 3],
+            ["Menyerahkan jalannya diskusi sepenuhnya kepada tokoh perwakilan mayoritas daerah untuk mempercepat waktu", 2],
+            ["Mengikuti forum tersebut sekadar memenuhi kewajiban presensi kehadiran tugas dari divisi humas", 1]
+        ], p: "Mengonversi keragaman aspirasi sosial menjadi matriks program taktis menunjukkan kompetensi pengelolaan sosiokultural yang transformatif."
+    },
+    {
+        c: "TKP", q: "Ketika ditugaskan ke wilayah pelosok yang belum memiliki fasilitas sanitasi dan listrik yang stabil untuk program dinas 1 minggu, sikap Anda...",
+        a: [
+            ["Menerima tugas dengan optimis, menyiapkan peralatan mitigasi mandiri (powerbank, obat, dll), dan fokus pada kesuksesan program", 5],
+            ["Mempelajari medan lokasi terlebih dahulu dan berkoordinasi dengan perangkat desa setempat untuk menumpang fasilitas", 4],
+            ["Menerima tugas tersebut namun meminta kompensasi kenaikan uang saku dinas luar karena medan yang berat", 2],
+            ["Mengajukan keberatan secara halus dan menyarankan staf baru yang dinilai fisiknya lebih bugar untuk berangkat", 2],
+            ["Mengeluhkan kondisi fasilitas penempatan yang buruk di media sosial pribadi sebagai bentuk ekspresi stres", 1]
+        ], p: "Kesiapan mental bertugas di medan terbatas dengan persiapan mandiri menunjukkan integritas penempatan mutlak abdi negara."
+    },
+    {
+        c: "TKP", q: "Anda diberikan beban kerja tambahan yang porsinya dua kali lipat dari biasanya karena kantor sedang kekurangan staf akibat pensiun dini. Sikap Anda...",
+        a: [
+            ["Membuat jadwal harian (to-do list) yang ketat, mengurutkan prioritas, dan menyelesaikan tugas dengan fokus tinggi", 5],
+            ["Menerima tugas tersebut dan menyelesaikannya semampu Anda pada jam kerja resmi tanpa berniat lembur", 4],
+            ["Meminta atasan membagi rata beban kerja tersebut ke rekan lain yang dirasa jam kerjanya lebih longgar", 3],
+            ["Bekerja dengan tergesa-gesa agar semua berkas selesai, meskipun akurasi hasil datanya menjadi berkurang", 2],
+            ["Memprotes kebijakan penambahan beban kerja tersebut karena dinilai mengeksploitasi tenaga pegawai secara tidak adil", 1]
+        ], p: "Manajemen waktu terstruktur (prioritas) saat menghadapi beban kerja ekstrem mencerminkan kapasitas profesionalisme yang kokoh."
+    },
+    {
+        c: "TKP", q: "Seorang rekan kerja sering kedapatan menggunakan fasilitas printer kantor untuk mencetak dokumen usaha dagang online pribadinya secara masif. Sikap Anda...",
+        a: [
+            ["Mengingatkannya secara personal dan sopan bahwa aset BMN kantor murni hanya boleh digunakan untuk operasional dinas", 5],
+            ["Melaporkan penyalahgunaan fasilitas tersebut kepada bagian penanggung jawab sarpras secara diam-diam", 4],
+            ["Membiarkannya saja karena merasa hal itu bukan urusan divisi Anda dan ingin menghindari konflik internal", 3],
+            ["Menyindir perilakunya saat forum makan siang bersama agar dia merasa malu dan menghentikan tindakannya", 2],
+            ["Ikut menggunakan printer untuk keperluan pribadi karena menganggap pengawasan internal kantor sangat longgar", 1]
+        ], p: "Teguran asertif tertutup menjaga integritas pemanfaatan aset negara (BMN) sekaligus memelihara relasi kerja yang sehat."
+    },
+    {
+        c: "TKP", q: "Bagi Anda, kejujuran dalam pelaporan data capaian kinerja bulanan dinilai sangat krusial karena berkaitan dengan...",
+        a: [
+            ["Pertanggungjawaban moral kepada Tuhan, hukum negara, dan akuntabilitas objektivitas instansi", 5],
+            ["Keamanan posisi jabatan Anda dari pemeriksaan inspektorat maupun badan audit eksternal", 4],
+            ["Besaran nilai pencairan tunjangan kinerja yang akan Anda terima di awal bulan berikutnya", 3],
+            ["Nama baik dan reputasi profesional Anda di mata rekan kerja satu ruangan", 2],
+            ["Penilaian subjektif atasan yang dapat membantu mempercepat proses kenaikan pangkat", 1]
+        ], p: "Integritas pelaporan berbasis akuntabilitas moral dan hukum adalah fondasi nilai mutlak aparatur sipil negara."
+    },
+    {
+        c: "TKP", q: "Anda melihat adanya polarisasi kubu kelompok (geng) di dalam kantor yang mulai mengganggu objektivitas koordinasi kerja antar-divisi. Sikap Anda...",
+        a: [
+            ["Tetap bersikap netral, profesional, dan aktif menjembatani komunikasi kerja antar-kubu tanpa memihak", 5],
+            ["Berusaha memfokuskan interaksi hanya pada pencapaian target kerja divisi pribadi saja secara aman", 4],
+            ["Melaporkan kondisi ketidakharmonisan sosial tersebut kepada bagian SDM agar diadakan kegiatan team building", 3],
+            ["Memilih bergabung dengan salah satu kubu yang dirasa memiliki pengaruh kekuasaan lebih besar di kantor", 2],
+            ["Ikut memperkeruh suasana dengan menceritakan kejelekan salah satu kubu kepada kubu lainnya", 1]
+        ], p: "Peran sebagai perekat bangsa dan integrator sosial diwujudkan lewat sikap netralitas profesional di tengah konflik internal."
+    }
+];
+
+let currentIndex = 0;
+let computedBank = [];
+let isAnsweringBlocked = false;
+let userAnswers = [];
+let scoreTracker = [];
+let pesertaNama = "";
+
+function startAssessment() {
+    const nameInput = document.getElementById('username').value.trim();
+    if(nameInput === "") { alert("Mohon masukkan nama lengkap terlebih dahulu."); return; }
+    pesertaNama = nameInput;
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('quiz-ui').style.display = 'block';
+    prepareBank();
+    initQuiz();
+}
+
+function prepareBank() {
+    computedBank = [];
+    userAnswers = new Array(rawBank.length).fill(null);
+    scoreTracker = new Array(rawBank.length).fill(0);
+    
+    for (let i = 0; i < rawBank.length; i++) {
+        let item = rawBank[i];
+        let optionsArr = [];
+        
+        if (item.c === "TKP") {
+            for (let j = 0; j < item.a.length; j++) {
+                optionsArr.push({ text: item.a[j][0], score: item.a[j][1] });
+            }
+        } else {
+            for (let j = 0; j < item.a.length; j++) {
+                optionsArr.push({ text: item.a[j], score: (item.a[j] === item.k) ? 5 : 0 });
+            }
+        }
+        
+        computedBank.push({
+            c: item.c, q: item.q, options: shuffleArray(optionsArr),
+            correctText: (item.c !== "TKP") ? item.k : null, pembahasan: item.p
+        });
+    }
+}
+
+function shuffleArray(array) {
+    let arr = array.slice();
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const temp = arr[i]; arr[i] = arr[j]; arr[j] = temp;
+    }
+    return arr;
+}
+
+function renderNavigationPanel() {
+    const navGrid = document.getElementById('nav-grid');
+    navGrid.innerHTML = '';
+    computedBank.forEach((soal, idx) => {
+        const btn = document.createElement('div');
+        btn.className = 'nav-btn'; btn.textContent = idx + 1;
+        if (idx === currentIndex) btn.classList.add('active');
+        else if (userAnswers[idx] !== null) btn.classList.add('answered');
+        
+        btn.onclick = function() { if (isAnsweringBlocked) return; currentIndex = idx; initQuiz(); };
+        navGrid.appendChild(btn);
+    });
+}
+
+function initQuiz() {
+    isAnsweringBlocked = false;
+    const q = computedBank[currentIndex];
+    const totalSoal = computedBank.length;
+    document.getElementById('progress').style.width = ((currentIndex + 1) / totalSoal) * 100 + "%";
+    document.getElementById('category').textContent = q.c;
+    document.getElementById('counter').textContent = "Soal " + (currentIndex + 1) + " / " + totalSoal;
+    document.getElementById('question').textContent = q.q;
+    
+    document.getElementById('btn-prev').style.visibility = (currentIndex === 0) ? 'hidden' : 'visible';
+    if (currentIndex === totalSoal - 1) {
+        document.getElementById('btn-next').style.display = 'none';
+        document.getElementById('btn-submit').style.display = 'block';
+    } else {
+        document.getElementById('btn-next').style.display = 'block';
+        document.getElementById('btn-submit').style.display = 'none';
+    }
+    
+    const optionsDiv = document.getElementById('options'); optionsDiv.innerHTML = '';
+    const labels = ['A', 'B', 'C', 'D', 'E'];
+    
+    q.options.forEach(function(opt, i) {
+        const item = document.createElement('div'); item.className = 'opt-item';
+        if(userAnswers[currentIndex] === opt.text) item.classList.add('selected-active');
+        
+        const labelDiv = document.createElement('div'); labelDiv.className = 'opt-label'; labelDiv.textContent = labels[i];
+        const textSpan = document.createElement('span'); textSpan.textContent = opt.text;
+        
+        item.appendChild(labelDiv); item.appendChild(textSpan);
+        item.onclick = function() { if (isAnsweringBlocked) return; isAnsweringBlocked = true; selectOption(item, opt, q); };
+        optionsDiv.appendChild(item);
+    });
+    renderNavigationPanel();
+}
+
+function selectOption(element, selectedOpt, questionObj) {
+    userAnswers[currentIndex] = selectedOpt.text;
+    scoreTracker[currentIndex] = selectedOpt.score;
+    const siblings = element.parentNode.querySelectorAll('.opt-item');
+    siblings.forEach(el => el.className = 'opt-item');
+
+    if (questionObj.c === "TKP") element.classList.add('selected-tkP');
+    else {
+        if (selectedOpt.score === 5) element.classList.add('selected-tiu-twk-correct');
+        else {
+            element.classList.add('selected-tiu-twk-wrong');
+            siblings.forEach(opt => { if (opt.querySelector('span').textContent === questionObj.correctText) opt.classList.add('selected-tiu-twk-correct'); });
+        }
+    }
+    renderNavigationPanel();
+    setTimeout(function() { goToNext(); }, 500); // 0,5 Detik Auto-Next
+}
+
+function goToNext() { if (currentIndex < computedBank.length - 1) { currentIndex++; initQuiz(); } }
+function goToPrev() { if (currentIndex > 0) { currentIndex--; initQuiz(); } }
+
+function confirmSubmit() {
+    const unans = userAnswers.filter(x => x === null).length;
+    if(confirm(unans > 0 ? `Peringatan! Ada ${unans} soal belum diisi. Tetap selesai?` : "Yakin ingin mengakhiri simulasi?")) {
+        calculateAndShowResult();
+    }
+}
+
+function calculateAndShowResult() {
+    document.getElementById('quiz-ui').style.display = 'none';
+    document.getElementById('result-screen').style.display = 'block';
+    
+    // AUTO SCROLL KE ATAS LAYAR UTAMANYA
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    
+    let tiuScore = 0, tiuMax = 0;
+    let twkScore = 0, twkMax = 0;
+    let tkpScore = 0, tkpMax = 0;
+    
+    computedBank.forEach((soal, idx) => {
+        let p = scoreTracker[idx];
+        if(soal.c === "TIU") { tiuScore += p; tiuMax += 5; }
+        else if(soal.c === "TWK") { twkScore += p; twkMax += 5; }
+        else if(soal.c === "TKP") { tkpScore += p; tkpMax += 5; }
+    });
+    
+    let totalScore = tiuScore + twkScore + tkpScore;
+    let totalMax = tiuMax + twkMax + tkpMax;
+    
+    let tiuScale = tiuMax > 0 ? Math.round((tiuScore / tiuMax) * 100) : 0;
+    let twkScale = twkMax > 0 ? Math.round((twkScore / twkMax) * 100) : 0;
+    let tkpScale = tkpMax > 0 ? Math.round((tkpScore / tkpMax) * 100) : 0;
+    let totalScale = totalMax > 0 ? Math.round((totalScore / totalMax) * 100) : 0;
+    
+    document.getElementById('user-manifest').innerHTML = "Nama Lengkap: <strong>" + pesertaNama + "</strong> | Sesi: Seleksi Kompetensi Dasar (Paket 2)";
+    
+    const tableBody = document.getElementById('matrix-body');
+    tableBody.innerHTML = `
+        <tr><td><strong>Tes Inteligensia Umum (TIU)</strong></td><td>${tiuScore}</td><td>${tiuMax}</td><td><strong>${tiuScale}</strong></td></tr>
+        <tr><td><strong>Tes Wawasan Kebangsaan (TWK)</strong></td><td>${twkScore}</td><td>${twkMax}</td><td><strong>${twkScale}</strong></td></tr>
+        <tr><td><strong>Tes Karakteristik Pribadi (TKP)</strong></td><td>${tkpScore}</td><td>${tkpMax}</td><td><strong>${tkpScale}</strong></td></tr>
+        <tr class="total-row"><td>SKOR KESELURUHAN AKHIR</td><td>${totalScore}</td><td>${totalMax}</td><td><span style="color:#ea580c; font-size:18px;">${totalScale}</span></td></tr>
+    `;
+    
+    const containerReview = document.getElementById('review-list');
+    containerReview.innerHTML = '';
+    
+    computedBank.forEach((soal, idx) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'review-item';
+        
+        let ansTerpilih = userAnswers[idx];
+        let statusText = "";
+        let colorStyle = "";
+        
+        if (soal.c === "TKP") {
+            statusText = "Skor: +" + scoreTracker[idx];
+            colorStyle = "color: #3b82f6;";
+        } else {
+            if (scoreTracker[idx] === 5) { statusText = "BENAR"; colorStyle = "color: var(--success);"; }
+            else { statusText = "SALAH"; colorStyle = "color: var(--danger);"; }
+        }
+        
+        itemDiv.innerHTML = `
+            <div class="review-header">
+                <span>No. ${idx + 1} [${soal.c}]</span>
+                <span class="review-status" style="${colorStyle}">${statusText}</span>
+            </div>
+            <div style="font-weight:600; margin-bottom:2px;">${soal.q}</div>
+            <div style="font-size:12px; color:#555;">
+                • Pilihan Anda: <strong>${ansTerpilih ? ansTerpilih : '[Kosong]'}</strong> 
+                ${soal.c !== 'TKP' ? ` | Kunci: <strong style="color:var(--success);">${soal.correctText}</strong>` : ''}
+            </div>
+            <div class="explanation-box"><strong>Pembahasan:</strong> ${soal.pembahasan}</div>
+        `;
+        containerReview.appendChild(itemDiv);
+    });
+}
+</script>
+</body>
+</html>

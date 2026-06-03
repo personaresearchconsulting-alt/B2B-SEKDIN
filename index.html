@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Portal Assessment - Persona Research & Consulting</title>
+    <style>
+        :root {
+            --midnight: #001f3f;
+            --gold: #d4af37;
+            --white: #ffffff;
+            --bg: #0f172a;
+            --success: #10b981;
+            --danger: #ef4444;
+            --slate-100: #f1f5f9;
+            --slate-200: #e2e8f0;
+            --slate-400: #94a3b8;
+            --slate-700: #334155;
+            --slate-800: #1e293b;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: var(--slate-700);
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            user-select: none;
+        }
+
+        .portal-container {
+            background: var(--white);
+            width: 95%;
+            max-width: 600px;
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.4);
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .brand-header h2 {
+            color: var(--midnight);
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+        }
+
+        .brand-subtitle {
+            color: var(--slate-400);
+            margin-top: 0;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .card-box {
+            background: #f8fafc;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid var(--slate-200);
+            margin-top: 20px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            margin: 15px 0 5px 0;
+            box-sizing: border-box;
+            border: 2px solid var(--slate-200);
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+            text-align: center;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+        .input-field:focus { border-color: var(--gold); }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            font-size: 14px;
+            font-weight: 700;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.2s ease;
+        }
+        .btn-primary { background: var(--midnight); color: var(--gold); }
+        .btn-primary:hover { background: #002d5c; }
+
+        /* Menu Grid */
+        .menu-grid {
+            display: none;
+            grid-template-columns: 1fr;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .menu-item {
+            background: #f8fafc;
+            border: 2px solid var(--slate-200);
+            border-radius: 10px;
+            padding: 16px;
+            text-decoration: none;
+            color: var(--slate-800);
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .menu-item:hover {
+            border-color: var(--gold);
+            background: #fffcf0;
+            transform: translateX(3px);
+        }
+
+        .menu-item .badge {
+            background: var(--midnight);
+            color: var(--gold);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+        }
+
+        .error-message {
+            color: var(--danger);
+            font-size: 13px;
+            font-weight: 600;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .expired-screen {
+            display: none;
+            color: var(--danger);
+            font-weight: bold;
+            padding: 20px 0;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 11px;
+            color: var(--slate-400);
+            border-top: 1px solid var(--slate-100);
+            padding-top: 15px;
+            margin-top: 25px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="portal-container">
+    <div class="brand-header">
+        <h2>PRC ASSESSMENT PORTAL</h2>
+        <p class="brand-subtitle">Persona Research & Consulting</p>
+    </div>
+
+    <div id="expired-zone" class="expired-screen">
+        <svg width="48" height="48" fill="currentColor" viewBox="0 0 16 16" style="margin-bottom:10px;">
+            <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+        </svg>
+        <div>Masa berlaku sistem evaluasi telah berakhir.<br>Silakan hubungi administrator untuk memperbarui akses.</div>
+    </div>
+
+    <div id="auth-zone" class="card-box">
+        <label style="text-align: left; display: block; font-weight: 700; color: var(--slate-800);">Masukkan Token Akses:</label>
+        <input type="password" id="access-token" class="input-field" placeholder="••••••••" autocomplete="off">
+        <div id="error-msg" class="error-message">Token akses tidak valid!</div>
+        <button onclick="verifyAkses()" class="btn btn-primary" style="margin-top: 15px;">Buka Dashboard</button>
+    </div>
+
+    <div id="menu-zone" class="menu-grid">
+        <div style="text-align: left; font-weight: 700; color: var(--slate-800); margin-bottom: 5px;">Pilih Paket Simulasi CAT:</div>
+        
+        <a href="skd_1.HTML" class="menu-item">
+            <span>Simulasi SKD - Paket 1</span>
+            <span class="badge">PREMIUM</span>
+        </a>
+        
+        <a href="skd_2.html" class="menu-item">
+            <span>Simulasi SKD - Paket 2</span>
+            <span class="badge">PREMIUM</span>
+        </a>
+        
+        <a href="skd_3.html" class="menu-item">
+            <span>Simulasi SKD - Paket 3</span>
+            <span class="badge">PREMIUM</span>
+        </a>
+    </div>
+
+    <div class="footer">
+        © 2026 Persona Research & Consulting | WA: 0877 4251 5786
+    </div>
+</div>
+
+<script>
+    // --- KEAMANAN DASAR ---
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('keydown', e => {
+        if (e.ctrlKey && ['c', 'u', 'i', 's'].includes(e.key)) e.preventDefault();
+    });
+
+    // --- SISTEM PEMBATASAN WAKTU (EXPIRED 1 JANUARI 2027) ---
+    const expiredDate = new Date('2027-01-01T00:00:00');
+    
+    function checkValidity() {
+        const currentDate = new Date();
+        if (currentDate >= expiredDate) {
+            document.getElementById('auth-zone').style.display = 'none';
+            document.getElementById('menu-zone').style.display = 'none';
+            document.getElementById('expired-zone').style.display = 'block';
+            return false;
+        }
+        return true;
+    }
+
+    // Jalankan pengecekan masa aktif saat halaman dimuat
+    checkValidity();
+
+    // --- VERIFIKASI TOKEN AKSES ---
+    function verifyAkses() {
+        if (!checkValidity()) return;
+
+        const inputToken = document.getElementById('access-token').value;
+        const targetPass = "persona05";
+        const errorMsg = document.getElementById('error-msg');
+
+        if (inputToken === targetPass) {
+            errorMsg.style.display = 'none';
+            document.getElementById('auth-zone').style.display = 'none';
+            document.getElementById('menu-zone').style.display = 'grid';
+        } else {
+            errorMsg.style.display = 'block';
+            document.getElementById('access-token').value = '';
+            document.getElementById('access-token').focus();
+        }
+    }
+
+    // Mendukung penekanan tombol 'Enter' untuk verifikasi cepat
+    document.getElementById('access-token').addEventListener('keyup', function(event) {
+        if (event.key === 'Enter') {
+            verifyAkses();
+        }
+    });
+</script>
+
+</body>
+</html>
