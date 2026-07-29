@@ -208,8 +208,8 @@
         if (e.ctrlKey && ['c', 'u', 'i', 's'].includes(e.key)) e.preventDefault();
     });
 
-    // --- SISTEM PEMBATASAN WAKTU (EXPIRED 1 JANUARI 2027) ---
-    const expiredDate = new Date('2027-01-01T00:00:00');
+    // --- SISTEM PEMBATASAN WAKTU (EXPIRED 1 JANUARI 2028) ---
+    const expiredDate = new Date('2028-01-01T00:00:00');
     
     function checkValidity() {
         const currentDate = new Date();
