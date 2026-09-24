@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -78,7 +79,10 @@
             font-weight: bold;
             letter-spacing: 2px;
         }
-        .input-field:focus { border-color: var(--gold); }
+
+        .input-field:focus {
+            border-color: var(--gold);
+        }
 
         .btn {
             width: 100%;
@@ -91,10 +95,17 @@
             text-transform: uppercase;
             transition: all 0.2s ease;
         }
-        .btn-primary { background: var(--midnight); color: var(--gold); }
-        .btn-primary:hover { background: #002d5c; }
 
-        /* Menu Grid */
+        .btn-primary {
+            background: var(--midnight);
+            color: var(--gold);
+        }
+
+        .btn-primary:hover {
+            background: #002d5c;
+        }
+
+        /* MENU GRID */
         .menu-grid {
             display: none;
             grid-template-columns: 1fr;
@@ -116,6 +127,7 @@
             transition: all 0.2s ease;
             cursor: pointer;
         }
+
         .menu-item:hover {
             border-color: var(--gold);
             background: #fffcf0;
@@ -153,104 +165,568 @@
             padding-top: 15px;
             margin-top: 25px;
         }
+
+        .logout-btn {
+            margin-top: 18px;
+            background: transparent;
+            border: 1px solid var(--slate-200);
+            color: var(--slate-400);
+            padding: 8px 18px;
+            border-radius: 7px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .logout-btn:hover {
+            color: var(--danger);
+            border-color: var(--danger);
+        }
     </style>
 </head>
+
 <body>
 
 <div class="portal-container">
+
     <div class="brand-header">
         <h2>PRC ASSESSMENT PORTAL</h2>
         <p class="brand-subtitle">Persona Research & Consulting</p>
     </div>
 
+
+    <!-- EXPIRED ZONE -->
+
     <div id="expired-zone" class="expired-screen">
+
         <svg width="48" height="48" fill="currentColor" viewBox="0 0 16 16" style="margin-bottom:10px;">
             <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
         </svg>
-        <div>Masa berlaku sistem evaluasi telah berakhir.<br>Silakan hubungi administrator untuk memperbarui akses.</div>
+
+        <div>
+            Masa berlaku sistem evaluasi telah berakhir.<br>
+            Silakan hubungi administrator untuk memperbarui akses.
+        </div>
+
     </div>
+
+
+    <!-- AUTH ZONE -->
 
     <div id="auth-zone" class="card-box">
-        <label style="text-align: left; display: block; font-weight: 700; color: var(--slate-800);">Masukkan Token Akses:</label>
-        <input type="password" id="access-token" class="input-field" placeholder="••••••••" autocomplete="off">
-        <div id="error-msg" class="error-message">Token akses tidak valid!</div>
-        <button onclick="verifyAkses()" class="btn btn-primary" style="margin-top: 15px;">Buka Dashboard</button>
+
+        <label style="text-align:left;display:block;font-weight:700;color:var(--slate-800);">
+            Masukkan Token Akses:
+        </label>
+
+        <input
+            type="password"
+            id="access-token"
+            class="input-field"
+            placeholder="••••••••"
+            autocomplete="off"
+        >
+
+        <div id="error-msg" class="error-message">
+            Token akses tidak valid!
+        </div>
+
+        <button
+            id="login-btn"
+            onclick="verifyAkses()"
+            class="btn btn-primary"
+            style="margin-top:15px;"
+        >
+            Buka Dashboard
+        </button>
+
     </div>
 
+
+    <!-- MENU ZONE -->
+
     <div id="menu-zone" class="menu-grid">
-        <div style="text-align: left; font-weight: 700; color: var(--slate-800); margin-bottom: 5px;">Pilih Paket Simulasi CAT:</div>
-        
+
+        <div style="text-align:left;font-weight:700;color:var(--slate-800);margin-bottom:5px;">
+            Pilih Paket Simulasi CAT:
+        </div>
+
         <a href="skd_1.HTML" class="menu-item">
             <span>Simulasi SKD - Paket 1</span>
             <span class="badge">PREMIUM</span>
         </a>
-        
+
         <a href="skd_2.html" class="menu-item">
             <span>Simulasi SKD - Paket 2</span>
             <span class="badge">PREMIUM</span>
         </a>
-        
+
         <a href="skd_3.html" class="menu-item">
             <span>Simulasi SKD - Paket 3</span>
             <span class="badge">PREMIUM</span>
         </a>
+
+        <button
+            id="logout-btn"
+            class="logout-btn"
+            onclick="logoutSystem()"
+        >
+            Keluar
+        </button>
+
     </div>
+
 
     <div class="footer">
         © 2026 Persona Research & Consulting | WA: 0877 4251 5786
     </div>
+
 </div>
 
-<script>
-    // --- KEAMANAN DASAR ---
-    document.addEventListener('contextmenu', e => e.preventDefault());
-    document.addEventListener('keydown', e => {
-        if (e.ctrlKey && ['c', 'u', 'i', 's'].includes(e.key)) e.preventDefault();
-    });
 
-    // --- SISTEM PEMBATASAN WAKTU (EXPIRED 1 JANUARI 2028) ---
-    const expiredDate = new Date('2028-01-01T00:00:00');
-    
-    function checkValidity() {
-        const currentDate = new Date();
-        if (currentDate >= expiredDate) {
-            document.getElementById('auth-zone').style.display = 'none';
-            document.getElementById('menu-zone').style.display = 'none';
-            document.getElementById('expired-zone').style.display = 'block';
-            return false;
-        }
+<script>
+
+/* =========================================================
+   APPS SCRIPT
+   ========================================================= */
+
+const SCRIPT_URL =
+"https://script.google.com/macros/s/AKfycbzbDujF3XDmzbFD3Od4HFWSh2fw_Tui7mnPDVbrtlvK9Df11elfiRFdTpNtb9Up27Y3/exec";
+
+const SEKDIN_SESSION_KEY =
+"personaSekdinSession";
+
+
+/* =========================================================
+   DEVICE ID
+   ========================================================= */
+
+function getDeviceId(){
+
+    let deviceId =
+    localStorage.getItem("personaDeviceId");
+
+    if(!deviceId){
+
+        deviceId =
+        "DEV-" +
+        Math.random().toString(36).substring(2,10) +
+        "-" +
+        Date.now().toString(36);
+
+        localStorage.setItem(
+            "personaDeviceId",
+            deviceId
+        );
+
+    }
+
+    return deviceId;
+}
+
+
+/* =========================================================
+   ELEMENT
+   ========================================================= */
+
+const authZone =
+document.getElementById("auth-zone");
+
+const menuZone =
+document.getElementById("menu-zone");
+
+const expiredZone =
+document.getElementById("expired-zone");
+
+const accessToken =
+document.getElementById("access-token");
+
+const errorMsg =
+document.getElementById("error-msg");
+
+const loginBtn =
+document.getElementById("login-btn");
+
+
+/* =========================================================
+   CHECK EXPIRY DARI SESSION
+   ========================================================= */
+
+function checkSessionExpiry(session){
+
+    if(!session) return false;
+
+    if(session.testing === true){
         return true;
     }
 
-    // Jalankan pengecekan masa aktif saat halaman dimuat
-    checkValidity();
-
-    // --- VERIFIKASI TOKEN AKSES ---
-    function verifyAkses() {
-        if (!checkValidity()) return;
-
-        const inputToken = document.getElementById('access-token').value;
-        const targetPass = "persona05";
-        const errorMsg = document.getElementById('error-msg');
-
-        if (inputToken === targetPass) {
-            errorMsg.style.display = 'none';
-            document.getElementById('auth-zone').style.display = 'none';
-            document.getElementById('menu-zone').style.display = 'grid';
-        } else {
-            errorMsg.style.display = 'block';
-            document.getElementById('access-token').value = '';
-            document.getElementById('access-token').focus();
-        }
+    if(!session.expiry){
+        return true;
     }
 
-    // Mendukung penekanan tombol 'Enter' untuk verifikasi cepat
-    document.getElementById('access-token').addEventListener('keyup', function(event) {
-        if (event.key === 'Enter') {
-            verifyAkses();
+    const expiryTime =
+    new Date(session.expiry).getTime();
+
+    if(isNaN(expiryTime)){
+        return true;
+    }
+
+    if(Date.now() > expiryTime){
+
+        authZone.style.display = "none";
+        menuZone.style.display = "none";
+        expiredZone.style.display = "block";
+
+        localStorage.removeItem(
+            SEKDIN_SESSION_KEY
+        );
+
+        return false;
+    }
+
+    return true;
+}
+
+
+/* =========================================================
+   OPEN DASHBOARD
+   ========================================================= */
+
+function openDashboard(session){
+
+    authZone.style.display = "none";
+    expiredZone.style.display = "none";
+    menuZone.style.display = "grid";
+
+}
+
+
+/* =========================================================
+   VERIFIKASI AKSES
+   ========================================================= */
+
+async function verifyAkses(){
+
+    const inputToken =
+    accessToken.value.trim();
+
+    if(!inputToken){
+
+        errorMsg.innerText =
+        "Masukkan token akses.";
+
+        errorMsg.style.display =
+        "block";
+
+        return;
+    }
+
+
+    /* =====================================================
+       PRC00 — TESTING
+       LANGSUNG MASUK
+       ===================================================== */
+
+    if(inputToken.toUpperCase() === "PRC00"){
+
+        const testSession = {
+
+            password:"PRC00",
+
+            jenis:"FULL",
+
+            paket:"TEST",
+
+            firstLogin:null,
+
+            expiry:null,
+
+            testing:true
+
+        };
+
+        localStorage.setItem(
+            SEKDIN_SESSION_KEY,
+            JSON.stringify(testSession)
+        );
+
+        errorMsg.style.display =
+        "none";
+
+        openDashboard(testSession);
+
+        return;
+    }
+
+
+    /* =====================================================
+       PASSWORD NORMAL
+       ===================================================== */
+
+    loginBtn.disabled = true;
+
+    loginBtn.innerText =
+    "MEMERIKSA...";
+
+    errorMsg.style.display =
+    "none";
+
+
+    try{
+
+        const deviceId =
+        getDeviceId();
+
+        const response =
+        await fetch(
+            SCRIPT_URL +
+            "?password=" +
+            encodeURIComponent(inputToken) +
+            "&deviceId=" +
+            encodeURIComponent(deviceId)
+        );
+
+
+        const data =
+        await response.json();
+
+
+        /* LOGIN GAGAL */
+
+        if(data.status !== "success"){
+
+            errorMsg.innerText =
+            data.message ||
+            "Token akses tidak valid!";
+
+            errorMsg.style.display =
+            "block";
+
+            return;
         }
-    });
+
+
+        /* =================================================
+           SEKDIN / FULL SAJA
+           ================================================= */
+
+        const jenis =
+        String(
+            data.jenis || ""
+        ).toUpperCase();
+
+
+        if(
+            jenis !== "KEDINASAN" &&
+            jenis !== "FULL"
+        ){
+
+            errorMsg.innerText =
+            "Token ini bukan akses KEDINASAN.";
+
+            errorMsg.style.display =
+            "block";
+
+            return;
+        }
+
+
+        /* =================================================
+           SIMPAN SESSION
+           ================================================= */
+
+        const session = {
+
+            password:data.password,
+
+            jenis:jenis,
+
+            paket:data.paket,
+
+            firstLogin:data.firstLogin,
+
+            expiry:data.expiry,
+
+            testing:false
+
+        };
+
+
+        localStorage.setItem(
+            SEKDIN_SESSION_KEY,
+            JSON.stringify(session)
+        );
+
+
+        openDashboard(session);
+
+
+    }catch(error){
+
+        console.error(error);
+
+        errorMsg.innerText =
+        "Sistem sedang sibuk. Silakan coba lagi.";
+
+        errorMsg.style.display =
+        "block";
+
+    }finally{
+
+        loginBtn.disabled = false;
+
+        loginBtn.innerText =
+        "Buka Dashboard";
+
+    }
+
+}
+
+
+/* =========================================================
+   RESTORE SESSION
+   ========================================================= */
+
+function restoreSession(){
+
+    const saved =
+    localStorage.getItem(
+        SEKDIN_SESSION_KEY
+    );
+
+    if(!saved) return;
+
+
+    try{
+
+        const session =
+        JSON.parse(saved);
+
+
+        /* PRC00 */
+
+        if(
+            session.testing === true &&
+            session.password === "PRC00"
+        ){
+
+            openDashboard(session);
+
+            return;
+        }
+
+
+        /* JENIS */
+
+        const jenis =
+        String(
+            session.jenis || ""
+        ).toUpperCase();
+
+
+        if(
+            jenis !== "KEDINASAN" &&
+            jenis !== "FULL"
+        ){
+
+            localStorage.removeItem(
+                SEKDIN_SESSION_KEY
+            );
+
+            return;
+        }
+
+
+        /* EXPIRY */
+
+        if(
+            !checkSessionExpiry(session)
+        ){
+
+            return;
+        }
+
+
+        openDashboard(session);
+
+
+    }catch(error){
+
+        localStorage.removeItem(
+            SEKDIN_SESSION_KEY
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   LOGOUT
+   ========================================================= */
+
+function logoutSystem(){
+
+    localStorage.removeItem(
+        SEKDIN_SESSION_KEY
+    );
+
+    location.reload();
+
+}
+
+
+/* =========================================================
+   ENTER = LOGIN
+   ========================================================= */
+
+accessToken.addEventListener(
+"keyup",
+function(event){
+
+    if(event.key === "Enter"){
+
+        verifyAkses();
+
+    }
+
+});
+
+
+/* =========================================================
+   PROTEKSI DASAR
+   ========================================================= */
+
+document.addEventListener(
+"contextmenu",
+e => e.preventDefault()
+);
+
+document.addEventListener(
+"keydown",
+e => {
+
+    if(
+        e.key === "F12" ||
+        (e.ctrlKey && e.shiftKey && e.key === "I") ||
+        (e.ctrlKey && e.key === "u")
+    ){
+
+        e.preventDefault();
+
+    }
+
+});
+
+
+/* =========================================================
+   START
+   ========================================================= */
+
+restoreSession();
+
 </script>
 
 </body>
 </html>
+```
